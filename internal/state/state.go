@@ -5,5 +5,11 @@ import (
 )
 
 type State struct {
-	Cfg *config.Config
+	Config *config.Config
+}
+
+func NewState(cfg *config.Config) *State {
+	return &State{
+		Config: cfg,
+	}
 }
