@@ -65,3 +65,20 @@ func HandlerReset(s *state.State, cmd commands.Command) error {
 	fmt.Println("Users reset.")
 	return nil
 }
+
+func HandlerUsers(s *state.State, cmd commands.Command) error {
+	ctx := context.Background()
+	users, err := s.DB.GetUsers(ctx)
+	if err != nil {
+		fmt.Println("Error: Couldn't retrieve users.")
+		os.Exit(1)
+	}
+	for _, usr := range users {
+		if usr == s.Config.User {
+			fmt.Printf("* %s (current)\n", usr)
+		} else {
+			fmt.Printf("* %s\n", usr)
+		}
+	}
+	return nil
+}
