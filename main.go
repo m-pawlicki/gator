@@ -1,13 +1,14 @@
 package main
 
-import _ "github.com/lib/pq"
-
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
+	_ "github.com/lib/pq"
 	"github.com/m-pawlicki/gator/internal/commands"
 	"github.com/m-pawlicki/gator/internal/config"
+	"github.com/m-pawlicki/gator/internal/database"
 	"github.com/m-pawlicki/gator/internal/handlers"
 	"github.com/m-pawlicki/gator/internal/state"
 )
@@ -15,8 +16,17 @@ import (
 func main() {
 	cfg := config.Read()
 	st := state.NewState(&cfg)
+	dbURL := cfg.DB
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		fmt.Println("Error: Couldn't open database.")
+		os.Exit(1)
+	}
+	dbQueries := database.New(db)
+	st.DB = dbQueries
 	cmds := commands.NewCommands()
 	cmds.Register("login", handlers.HandlerLogin)
+	cmds.Register("register", handlers.HandlerRegister)
 	args := os.Args
 	if len(args) < 2 {
 		fmt.Println("Error: Not enough arguments provided.")

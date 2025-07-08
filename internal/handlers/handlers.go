@@ -1,10 +1,14 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/m-pawlicki/gator/internal/commands"
+	"github.com/m-pawlicki/gator/internal/database"
 	"github.com/m-pawlicki/gator/internal/state"
 )
 
@@ -13,7 +17,38 @@ func HandlerLogin(s *state.State, cmd commands.Command) error {
 		fmt.Println("Error: Username required.")
 		os.Exit(1)
 	}
-	s.Config.SetUser(cmd.Args[0])
-	fmt.Printf("User %s has been set.\n", cmd.Args[0])
+	ctx := context.Background()
+	_, err := s.DB.GetUser(ctx, cmd.Args[0])
+	if err != nil {
+		fmt.Println("Error: User doesn't exist.")
+		os.Exit(1)
+	} else {
+		s.Config.SetUser(cmd.Args[0])
+		fmt.Printf("User %s has been set.\n", cmd.Args[0])
+	}
+	return nil
+}
+
+func HandlerRegister(s *state.State, cmd commands.Command) error {
+	if len(cmd.Args) < 1 {
+		fmt.Println("Error: Username required.")
+		os.Exit(1)
+	}
+	ctx := context.Background()
+	params := database.CreateUserParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      cmd.Args[0],
+	}
+	dbParams := database.CreateUserParams(params)
+	_, err := s.DB.GetUser(ctx, cmd.Args[0])
+	if err != nil {
+		s.DB.CreateUser(ctx, dbParams)
+		fmt.Printf("User created: %v\n", params)
+	} else {
+		fmt.Println("Error: User already exists.")
+		os.Exit(1)
+	}
 	return nil
 }
