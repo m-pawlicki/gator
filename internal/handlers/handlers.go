@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/m-pawlicki/gator/internal/commands"
 	"github.com/m-pawlicki/gator/internal/database"
+	"github.com/m-pawlicki/gator/internal/rss"
 	"github.com/m-pawlicki/gator/internal/state"
 )
 
@@ -80,5 +81,16 @@ func HandlerUsers(s *state.State, cmd commands.Command) error {
 			fmt.Printf("* %s\n", usr)
 		}
 	}
+	return nil
+}
+
+func HandlerAgg(s *state.State, cmd commands.Command) error {
+	ctx := context.Background()
+	feedURL := "https://www.wagslane.dev/index.xml"
+	feed, err := rss.FetchFeed(ctx, feedURL)
+	if err != nil {
+		fmt.Printf("%s\n", err)
+	}
+	fmt.Printf("%s\n", feed)
 	return nil
 }

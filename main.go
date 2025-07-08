@@ -29,6 +29,7 @@ func main() {
 	cmds.Register("register", handlers.HandlerRegister)
 	cmds.Register("reset", handlers.HandlerReset)
 	cmds.Register("users", handlers.HandlerUsers)
+	cmds.Register("agg", handlers.HandlerAgg)
 	args := os.Args
 	if len(args) < 2 {
 		fmt.Println("Error: Not enough arguments provided.")
