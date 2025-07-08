@@ -134,3 +134,25 @@ func HandlerAddFeed(s *state.State, cmd commands.Command) error {
 	}
 	return nil
 }
+
+func HandlerFeeds(s *state.State, cmd commands.Command) error {
+	ctx := context.Background()
+	feeds, err := s.DB.GetFeeds(ctx)
+	if err != nil {
+		fmt.Println("Couldn't get list")
+		os.Exit(1)
+	}
+	if len(feeds) < 1 {
+		fmt.Println("No feeds available.")
+		return nil
+	}
+	for _, feed := range feeds {
+		username, err := s.DB.GetUserFromID(ctx, feed.UserID)
+		if err != nil {
+			fmt.Println("Couldn't get user.")
+			os.Exit(1)
+		}
+		fmt.Printf("Feed name: %s | Feed URL: %s | Added by: %s", feed.Name, feed.Url, username)
+	}
+	return nil
+}

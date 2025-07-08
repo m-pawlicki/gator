@@ -19,5 +19,5 @@ DELETE FROM users;
 SELECT name FROM users;
 
 -- name: GetUserFromID :one
-SELECT * FROM users
+SELECT name FROM users
 WHERE id = $1;

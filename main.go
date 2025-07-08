@@ -31,6 +31,7 @@ func main() {
 	cmds.Register("users", handlers.HandlerUsers)
 	cmds.Register("agg", handlers.HandlerAgg)
 	cmds.Register("addfeed", handlers.HandlerAddFeed)
+	cmds.Register("feeds", handlers.HandlerFeeds)
 	args := os.Args
 	if len(args) < 2 {
 		fmt.Println("Error: Not enough arguments provided.")
