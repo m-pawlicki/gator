@@ -35,6 +35,7 @@ func HandlerRegister(s *state.State, cmd commands.Command) error {
 		os.Exit(1)
 	}
 	ctx := context.Background()
+	username := cmd.Args[0]
 	params := database.CreateUserParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
@@ -42,13 +43,14 @@ func HandlerRegister(s *state.State, cmd commands.Command) error {
 		Name:      cmd.Args[0],
 	}
 	dbParams := database.CreateUserParams(params)
-	_, err := s.DB.GetUser(ctx, cmd.Args[0])
-	if err != nil {
-		s.DB.CreateUser(ctx, dbParams)
-		fmt.Printf("User created: %v\n", params)
-	} else {
+	usr, _ := s.DB.GetUser(ctx, username)
+	if usr.Name == username {
 		fmt.Println("Error: User already exists.")
 		os.Exit(1)
+	} else {
+		s.DB.CreateUser(ctx, dbParams)
+		s.Config.SetUser(username)
+		fmt.Printf("User created: %v\n", params)
 	}
 	return nil
 }
