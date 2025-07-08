@@ -54,3 +54,14 @@ func HandlerRegister(s *state.State, cmd commands.Command) error {
 	}
 	return nil
 }
+
+func HandlerReset(s *state.State, cmd commands.Command) error {
+	ctx := context.Background()
+	err := s.DB.ResetUsers(ctx)
+	if err != nil {
+		fmt.Println("Error: Failed to reset users.")
+		os.Exit(1)
+	}
+	fmt.Println("Users reset.")
+	return nil
+}
