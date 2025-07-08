@@ -15,13 +15,14 @@ import (
 
 func HandlerLogin(s *state.State, cmd commands.Command) error {
 	if len(cmd.Args) < 1 {
-		fmt.Println("Error: Username required.")
+		fmt.Println("Username required.")
+		fmt.Println("Usage: login <username>")
 		os.Exit(1)
 	}
 	ctx := context.Background()
 	_, err := s.DB.GetUser(ctx, cmd.Args[0])
 	if err != nil {
-		fmt.Println("Error: User doesn't exist.")
+		fmt.Println("User doesn't exist.")
 		os.Exit(1)
 	} else {
 		s.Config.SetUser(cmd.Args[0])
@@ -32,7 +33,8 @@ func HandlerLogin(s *state.State, cmd commands.Command) error {
 
 func HandlerRegister(s *state.State, cmd commands.Command) error {
 	if len(cmd.Args) < 1 {
-		fmt.Println("Error: Username required.")
+		fmt.Println("Username required.")
+		fmt.Println("Usage: register <username>")
 		os.Exit(1)
 	}
 	ctx := context.Background()
@@ -46,12 +48,12 @@ func HandlerRegister(s *state.State, cmd commands.Command) error {
 	dbParams := database.CreateUserParams(params)
 	usr, _ := s.DB.GetUser(ctx, username)
 	if usr.Name == username {
-		fmt.Println("Error: User already exists.")
+		fmt.Println("User already exists.")
 		os.Exit(1)
 	} else {
 		s.DB.CreateUser(ctx, dbParams)
 		s.Config.SetUser(username)
-		fmt.Printf("User created: %v\n", params)
+		fmt.Printf("User created: %s\n", params)
 	}
 	return nil
 }
@@ -60,7 +62,7 @@ func HandlerReset(s *state.State, cmd commands.Command) error {
 	ctx := context.Background()
 	err := s.DB.ResetUsers(ctx)
 	if err != nil {
-		fmt.Println("Error: Failed to reset users.")
+		fmt.Println("Failed to reset users.")
 		os.Exit(1)
 	}
 	fmt.Println("Users reset.")
@@ -71,7 +73,7 @@ func HandlerUsers(s *state.State, cmd commands.Command) error {
 	ctx := context.Background()
 	users, err := s.DB.GetUsers(ctx)
 	if err != nil {
-		fmt.Println("Error: Couldn't retrieve users.")
+		fmt.Println("Couldn't retrieve users.")
 		os.Exit(1)
 	}
 	for _, usr := range users {
@@ -92,5 +94,43 @@ func HandlerAgg(s *state.State, cmd commands.Command) error {
 		fmt.Printf("%s\n", err)
 	}
 	fmt.Printf("%s\n", feed)
+	return nil
+}
+
+func HandlerAddFeed(s *state.State, cmd commands.Command) error {
+	if len(cmd.Args) < 1 {
+		fmt.Println("Title and URL missing.")
+		fmt.Println("Usage: addfeed <title> <url>")
+		os.Exit(1)
+	}
+	if len(cmd.Args) < 2 {
+		fmt.Println("URL missing.")
+		fmt.Println("Usage: addfeed <title> <url>")
+		os.Exit(1)
+	}
+	feedName := cmd.Args[0]
+	feedURL := cmd.Args[1]
+	ctx := context.Background()
+	currUser := s.Config.User
+	userID, err := s.DB.GetUser(ctx, currUser)
+	if err != nil {
+		fmt.Println("Error retrieving user.")
+		os.Exit(1)
+	}
+	params := database.CreateFeedParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      feedName,
+		Url:       feedURL,
+		UserID:    userID.ID,
+	}
+	_, err = s.DB.CreateFeed(ctx, params)
+	if err != nil {
+		fmt.Println("Couldn't add feed.")
+		os.Exit(1)
+	} else {
+		fmt.Printf("Feed added: %s\n", params)
+	}
 	return nil
 }
