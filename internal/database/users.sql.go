@@ -77,22 +77,28 @@ func (q *Queries) GetUserFromID(ctx context.Context, id uuid.UUID) (string, erro
 }
 
 const getUsers = `-- name: GetUsers :many
-SELECT name FROM users
+SELECT name, id 
+FROM users
 `
 
-func (q *Queries) GetUsers(ctx context.Context) ([]string, error) {
+type GetUsersRow struct {
+	Name string
+	ID   uuid.UUID
+}
+
+func (q *Queries) GetUsers(ctx context.Context) ([]GetUsersRow, error) {
 	rows, err := q.db.QueryContext(ctx, getUsers)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	var items []GetUsersRow
 	for rows.Next() {
-		var name string
-		if err := rows.Scan(&name); err != nil {
+		var i GetUsersRow
+		if err := rows.Scan(&i.Name, &i.ID); err != nil {
 			return nil, err
 		}
-		items = append(items, name)
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
