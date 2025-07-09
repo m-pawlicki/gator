@@ -139,7 +139,7 @@ func HandlerFeeds(s *state.State, cmd commands.Command) error {
 	ctx := context.Background()
 	feeds, err := s.DB.GetFeeds(ctx)
 	if err != nil {
-		fmt.Println("Couldn't get list")
+		fmt.Println("Couldn't get feeds.")
 		os.Exit(1)
 	}
 	if len(feeds) < 1 {
@@ -152,7 +152,7 @@ func HandlerFeeds(s *state.State, cmd commands.Command) error {
 			fmt.Println("Couldn't get user.")
 			os.Exit(1)
 		}
-		fmt.Printf("Feed name: %s | Feed URL: %s | Added by: %s", feed.Name, feed.Url, username)
+		fmt.Printf("Feed name: %s | Feed URL: %s | Added by: %s\n", feed.Name, feed.Url, username)
 	}
 	return nil
 }
