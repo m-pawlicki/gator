@@ -92,14 +92,21 @@ func HandlerUsers(s *state.State, cmd commands.Command) error {
 }
 
 func HandlerAgg(s *state.State, cmd commands.Command) error {
-	ctx := context.Background()
-	feedURL := "https://www.wagslane.dev/index.xml"
-	feed, err := rss.FetchFeed(ctx, feedURL)
-	if err != nil {
-		fmt.Printf("%s\n", err)
+	if len(cmd.Args) < 1 {
+		fmt.Println("Please enter a duration.")
+		fmt.Println("Usage example: agg <1s/1m/1hr>")
+		os.Exit(1)
 	}
-	fmt.Printf("%s\n", feed)
-	return nil
+	duration, err := time.ParseDuration(cmd.Args[0])
+	if err != nil {
+		fmt.Println("Couldn't parse duration.")
+		os.Exit(1)
+	}
+	fmt.Println("Collecting feeds every", duration)
+	ticker := time.NewTicker(duration)
+	for ; ; <-ticker.C {
+		rss.ScrapeFeeds(s)
+	}
 }
 
 func HandlerAddFeed(s *state.State, cmd commands.Command, user database.User) error {
@@ -143,7 +150,7 @@ func HandlerAddFeed(s *state.State, cmd commands.Command, user database.User) er
 		fmt.Println("Failed to follow feed after creation.")
 		os.Exit(1)
 	} else {
-		fmt.Printf("%s is now following the feed: %s", fefo.UserName, fefo.FeedName)
+		fmt.Printf("%s is now following the feed '%s'", fefo.UserName, fefo.FeedName)
 	}
 	return nil
 }

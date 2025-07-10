@@ -8,6 +8,10 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
+
+	"github.com/m-pawlicki/gator/internal/database"
+	"github.com/m-pawlicki/gator/internal/state"
 )
 
 type RSSFeed struct {
@@ -57,4 +61,34 @@ func FetchFeed(ctx context.Context, feedURL string) (*RSSFeed, error) {
 		rss.Channel.Item[key].Description = html.UnescapeString(val.Description)
 	}
 	return rss, nil
+}
+
+func ScrapeFeeds(s *state.State) error {
+	ctx := context.Background()
+	nextFeed, err := s.DB.GetNextFeedToFetch(ctx)
+	if err != nil {
+		fmt.Println("Failed to get next feed.")
+		os.Exit(1)
+	}
+	markedFeed := database.MarkFeedFetchedParams{
+		UpdatedAt: time.Now(),
+		ID:        nextFeed.ID,
+	}
+	err = s.DB.MarkFeedFetched(ctx, markedFeed)
+	if err != nil {
+		fmt.Println("Failed to mark feed as fetched.")
+		os.Exit(1)
+	}
+	feedItems, err := FetchFeed(ctx, nextFeed.Url)
+	if err != nil {
+		fmt.Println("Couldn't fetch feed.")
+		os.Exit(1)
+	}
+	fmt.Printf("From feed '%s':\n", nextFeed.Name)
+	fmt.Println("- - - - - - -")
+	for _, item := range feedItems.Channel.Item {
+		fmt.Printf("Title: %s\n", item.Title)
+	}
+	fmt.Println("- - - - - - -")
+	return nil
 }
