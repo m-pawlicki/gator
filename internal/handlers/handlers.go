@@ -203,8 +203,7 @@ func HandlerFollow(s *state.State, cmd commands.Command, user database.User) err
 
 func HandlerFollowing(s *state.State, cmd commands.Command, user database.User) error {
 	ctx := context.Background()
-	userID := user.ID
-	feeds, err := s.DB.GetFeedFollowsForUser(ctx, userID)
+	feeds, err := s.DB.GetFeedFollowsForUser(ctx, user.ID)
 	if err != nil {
 		fmt.Println("Failed to get feeds for user.")
 		os.Exit(1)
@@ -213,5 +212,25 @@ func HandlerFollowing(s *state.State, cmd commands.Command, user database.User) 
 	for _, feed := range feeds {
 		fmt.Printf("- %s\n", feed.FeedName)
 	}
+	return nil
+}
+
+func HandlerUnfollow(s *state.State, cmd commands.Command, user database.User) error {
+	if len(cmd.Args) < 1 {
+		fmt.Println("URL missing.")
+		fmt.Println("Usage: unfollow <url>")
+		os.Exit(1)
+	}
+	ctx := context.Background()
+	params := database.DeleteFeedFollowParams{
+		UserID: user.ID,
+		Url:    cmd.Args[0],
+	}
+	err := s.DB.DeleteFeedFollow(ctx, params)
+	if err != nil {
+		fmt.Println("Error unfollowing feed.")
+		os.Exit(1)
+	}
+	fmt.Println("Unfollowed feed successfully.")
 	return nil
 }

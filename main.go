@@ -34,6 +34,7 @@ func main() {
 	cmds.Register("addfeed", commands.MiddlewareLoggedIn(handlers.HandlerAddFeed))
 	cmds.Register("follow", commands.MiddlewareLoggedIn(handlers.HandlerFollow))
 	cmds.Register("following", commands.MiddlewareLoggedIn(handlers.HandlerFollowing))
+	cmds.Register("unfollow", commands.MiddlewareLoggedIn(handlers.HandlerUnfollow))
 	args := os.Args
 	if len(args) < 2 {
 		fmt.Println("Error: Not enough arguments provided.")
