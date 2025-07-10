@@ -87,7 +87,7 @@ func ScrapeFeeds(s *state.State) error {
 	fmt.Printf("From feed '%s':\n", nextFeed.Name)
 	fmt.Println("- - - - - - -")
 	for _, item := range feedItems.Channel.Item {
-		fmt.Printf("Title: %s\n", item.Title)
+		fmt.Printf("* %s\n", item.Title)
 	}
 	fmt.Println("- - - - - - -")
 	return nil
