@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"html"
 	"io"
+	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/m-pawlicki/gator/internal/database"
 	"github.com/m-pawlicki/gator/internal/state"
 )
@@ -84,11 +87,30 @@ func ScrapeFeeds(s *state.State) error {
 		fmt.Println("Couldn't fetch feed.")
 		os.Exit(1)
 	}
-	fmt.Printf("From feed '%s':\n", nextFeed.Name)
-	fmt.Println("- - - - - - -")
+
 	for _, item := range feedItems.Channel.Item {
-		fmt.Printf("* %s\n", item.Title)
+		timeConv, err := time.Parse(time.RFC1123, item.PubDate)
+		if err != nil {
+
+		}
+		post := database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   nextFeed.CreatedAt,
+			UpdatedAt:   time.Now(),
+			Title:       item.Title,
+			Url:         item.Link,
+			Description: item.Description,
+			PublishedAt: timeConv,
+			FeedID:      nextFeed.ID,
+		}
+		_, err = s.DB.CreatePost(ctx, post)
+		if err != nil {
+			if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+				continue
+			}
+			log.Printf("Couldn't create post: %v\n", err)
+			continue
+		}
 	}
-	fmt.Println("- - - - - - -")
 	return nil
 }

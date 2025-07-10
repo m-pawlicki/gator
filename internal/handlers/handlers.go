@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -57,7 +58,7 @@ func HandlerRegister(s *state.State, cmd commands.Command) error {
 			os.Exit(1)
 		}
 		s.Config.SetUser(username)
-		fmt.Printf("User %s created at %s\n", newUsr.Name, newUsr.CreatedAt)
+		fmt.Printf("New user %s created\n", newUsr.Name)
 	}
 	return nil
 }
@@ -239,5 +240,42 @@ func HandlerUnfollow(s *state.State, cmd commands.Command, user database.User) e
 		os.Exit(1)
 	}
 	fmt.Println("Unfollowed feed successfully.")
+	return nil
+}
+
+func HandlerBrowse(s *state.State, cmd commands.Command, user database.User) error {
+	var postLimit int32 = 2
+	if len(cmd.Args) >= 1 {
+		limit, err := strconv.Atoi(cmd.Args[0])
+		if err != nil {
+			fmt.Println("Wrong format.")
+			fmt.Println("Usage: browse (optional)<num>")
+			fmt.Println("If no number is provided, the default is 2.")
+			os.Exit(1)
+		}
+		postLimit = int32(limit)
+	}
+	ctx := context.Background()
+	params := database.GetPostsForUserParams{
+		ID:    user.ID,
+		Limit: postLimit,
+	}
+	posts, err := s.DB.GetPostsForUser(ctx, params)
+	if err != nil {
+		fmt.Println("Error getting posts.")
+		os.Exit(1)
+	}
+	if len(posts) < 1 {
+		fmt.Println("There's no posts! Have you tried using agg or followfeed yet?")
+		os.Exit(1)
+	}
+	for num, post := range posts {
+		fmt.Printf("= Post %d =\n", num+1)
+		fmt.Printf("<%s>\n\n", post.Url)
+		fmt.Printf("Title: %s\n", post.Title)
+		fmt.Printf("Date published: %s\n\n", post.PublishedAt)
+		fmt.Printf("%s\n", post.Description)
+		fmt.Println("- - - - - - -")
+	}
 	return nil
 }

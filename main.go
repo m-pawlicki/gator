@@ -35,6 +35,7 @@ func main() {
 	cmds.Register("follow", commands.MiddlewareLoggedIn(handlers.HandlerFollow))
 	cmds.Register("following", commands.MiddlewareLoggedIn(handlers.HandlerFollowing))
 	cmds.Register("unfollow", commands.MiddlewareLoggedIn(handlers.HandlerUnfollow))
+	cmds.Register("browse", commands.MiddlewareLoggedIn(handlers.HandlerBrowse))
 	args := os.Args
 	if len(args) < 2 {
 		fmt.Println("Error: Not enough arguments provided.")
