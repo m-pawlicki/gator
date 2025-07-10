@@ -1,8 +1,11 @@
 package commands
 
 import (
+	"context"
 	"fmt"
+	"os"
 
+	"github.com/m-pawlicki/gator/internal/database"
 	"github.com/m-pawlicki/gator/internal/state"
 )
 
@@ -31,4 +34,16 @@ func (c *Commands) Run(s *state.State, cmd Command) error {
 
 func (c *Commands) Register(name string, f func(*state.State, Command) error) {
 	c.commands[name] = f
+}
+
+func MiddlewareLoggedIn(handler func(s *state.State, cmd Command, user database.User) error) func(*state.State, Command) error {
+	login := func(s *state.State, cmd Command) error {
+		user, err := s.DB.GetUser(context.Background(), s.Config.User)
+		if err != nil {
+			fmt.Println("User not logged in.")
+			os.Exit(1)
+		}
+		return handler(s, cmd, user)
+	}
+	return login
 }

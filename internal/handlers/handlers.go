@@ -80,6 +80,7 @@ func HandlerUsers(s *state.State, cmd commands.Command) error {
 		fmt.Println("Couldn't retrieve users.")
 		os.Exit(1)
 	}
+	fmt.Println("List of all users:")
 	for _, usr := range users {
 		if usr.Name == s.Config.User {
 			fmt.Printf("* %s (current)\n", usr.Name)
@@ -101,7 +102,7 @@ func HandlerAgg(s *state.State, cmd commands.Command) error {
 	return nil
 }
 
-func HandlerAddFeed(s *state.State, cmd commands.Command) error {
+func HandlerAddFeed(s *state.State, cmd commands.Command, user database.User) error {
 	if len(cmd.Args) < 1 {
 		fmt.Println("Title and URL missing.")
 		fmt.Println("Usage: addfeed <title> <url>")
@@ -115,26 +116,20 @@ func HandlerAddFeed(s *state.State, cmd commands.Command) error {
 	feedName := cmd.Args[0]
 	feedURL := cmd.Args[1]
 	ctx := context.Background()
-	currUser := s.Config.User
-	userID, err := s.DB.GetUser(ctx, currUser)
-	if err != nil {
-		fmt.Println("Error retrieving user.")
-		os.Exit(1)
-	}
 	params := database.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 		Name:      feedName,
 		Url:       feedURL,
-		UserID:    userID.ID,
+		UserID:    user.ID,
 	}
 	newFeed, err := s.DB.CreateFeed(ctx, params)
 	if err != nil {
 		fmt.Println("Couldn't add feed.")
 		os.Exit(1)
 	} else {
-		fmt.Printf("Feed added: %s (%s)\n", newFeed.Name, newFeed.Url)
+		fmt.Printf("Feed added: %s - %s\n", newFeed.Name, newFeed.Url)
 	}
 	fefoParams := database.CreateFeedFollowParams{
 		ID:        uuid.New(),
@@ -175,7 +170,7 @@ func HandlerFeeds(s *state.State, cmd commands.Command) error {
 	return nil
 }
 
-func HandlerFollow(s *state.State, cmd commands.Command) error {
+func HandlerFollow(s *state.State, cmd commands.Command, user database.User) error {
 	if len(cmd.Args) < 1 {
 		fmt.Println("URL missing.")
 		fmt.Println("Usage: follow <url>")
@@ -186,11 +181,6 @@ func HandlerFollow(s *state.State, cmd commands.Command) error {
 	feed, err := s.DB.GetFeedByURL(ctx, url)
 	if err != nil {
 		fmt.Println("Couldn't find feed by URL.")
-		os.Exit(1)
-	}
-	user, err := s.DB.GetUser(ctx, s.Config.User)
-	if err != nil {
-		fmt.Println("Couldn't get user.")
 		os.Exit(1)
 	}
 	params := database.CreateFeedFollowParams{
@@ -211,13 +201,8 @@ func HandlerFollow(s *state.State, cmd commands.Command) error {
 	return nil
 }
 
-func HandlerFollowing(s *state.State, cmd commands.Command) error {
+func HandlerFollowing(s *state.State, cmd commands.Command, user database.User) error {
 	ctx := context.Background()
-	user, err := s.DB.GetUser(ctx, s.Config.User)
-	if err != nil {
-		fmt.Println("Failed to get user.")
-		os.Exit(1)
-	}
 	userID := user.ID
 	feeds, err := s.DB.GetFeedFollowsForUser(ctx, userID)
 	if err != nil {

@@ -30,10 +30,10 @@ func main() {
 	cmds.Register("reset", handlers.HandlerReset)
 	cmds.Register("users", handlers.HandlerUsers)
 	cmds.Register("agg", handlers.HandlerAgg)
-	cmds.Register("addfeed", handlers.HandlerAddFeed)
 	cmds.Register("feeds", handlers.HandlerFeeds)
-	cmds.Register("follow", handlers.HandlerFollow)
-	cmds.Register("following", handlers.HandlerFollowing)
+	cmds.Register("addfeed", commands.MiddlewareLoggedIn(handlers.HandlerAddFeed))
+	cmds.Register("follow", commands.MiddlewareLoggedIn(handlers.HandlerFollow))
+	cmds.Register("following", commands.MiddlewareLoggedIn(handlers.HandlerFollowing))
 	args := os.Args
 	if len(args) < 2 {
 		fmt.Println("Error: Not enough arguments provided.")
