@@ -19,27 +19,37 @@ Create and set up `.gatorconfig.json` inside your home directory to point to you
 ```
 ## Usage
 
-Available commands
+Available commands:
 
+`login <user>` 
+> Log in as a user
 
-`login <user>` Log in as a user
+`register <user>` 
+> Register a new user
 
-`register <user>` Register a new user
+`reset` 
+> Resets all users
 
-`reset` Resets all users
+`users` 
+> Lists all users
 
-`users` Lists all users
+`agg <duration>` 
+> Aggregates posts from followed feeds every duration, e.g agg 5m for every 5 minutes
 
-`agg <duration>` Aggregates posts from followed feeds every duration, e.g agg 5m for every 5 minutes
+`feeds` 
+> Lists all feeds along with the user who added it
 
-`feeds` Lists all feeds along with the user who added it
+`addfeed <title> <url>` 
+> Add a feed
 
-`addfeed <title> <url>` Add a feed
+`follow <url>` 
+> Follow a feed
 
-`follow <url>` Follow a feed
+`following` 
+> Shows the feeds the logged-in user is following
 
-`following` Shows the feeds the logged-in user is following
+`unfollow <url>` 
+> Unfollow a feed
 
-`unfollow <url>` Unfollow a feed
-
-`browse (optional)<number>` Shows <number> of posts from your followed feeds, if <number> isn't provided it defaults to 2
+`browse (optional)<number>` 
+> Shows <number> of posts from your followed feeds, if <number> isn't provided it defaults to 2
